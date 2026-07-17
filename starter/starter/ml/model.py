@@ -1,5 +1,6 @@
 from sklearn.metrics import fbeta_score, precision_score, recall_score
-
+from sklearn.ensemble import RandomForestClassifier
+import joblib
 
 def train_model(X_train, y_train):
     """
@@ -16,7 +17,9 @@ def train_model(X_train, y_train):
     model : RandomForestClassifier
         Trained machine learning model.
     """
-    pass
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
+    return model
 
 
 def compute_model_metrics(y, preds):
@@ -55,4 +58,20 @@ def inference(model, X):
     preds : np.ndarray
         Predictions from the model.
     """
-    pass
+    preds = model.predict(X)
+    return preds
+
+def save_model(model, path):
+    joblib.dump(model, path)
+
+
+def load_model(path):
+    return joblib.load(path)
+
+
+def save_object(obj, path):
+    joblib.dump(obj, path)
+
+
+def load_object(path):
+    return joblib.load(path)
