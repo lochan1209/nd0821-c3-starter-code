@@ -1,4 +1,5 @@
 # Put the code for your API here.
+from pathlib import Path
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -9,10 +10,17 @@ from starter.ml.model import load_model, load_object, inference
 
 app = FastAPI()
 
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_DIR = BASE_DIR / "model"
+
+model = load_model(MODEL_DIR / "model.pkl")
+encoder = load_object(MODEL_DIR / "encoder.pkl")
+lb = load_object(MODEL_DIR / "lb.pkl")
+'''
 model = load_model("starter/model/model.pkl")
 encoder = load_object("starter/model/encoder.pkl")
 lb = load_object("starter/model/lb.pkl")
-
+'''
 cat_features = [
     "workclass",
     "education",
