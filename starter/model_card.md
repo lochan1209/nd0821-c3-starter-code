@@ -55,7 +55,7 @@ These metrics were computed using the `compute_model_metrics()` function.
 
 Overall model performance on the full test set should be reported here if available:
 
-- Overall model performance: Precision = [add overall value], Recall = [add overall value], F1 = [add overall value]
+- Overall model performance: Precision = 0.7419, Recall = 0.6384, F1 = 0.6863
 
 Slice-based performance for the `education` feature included the following results:
 
