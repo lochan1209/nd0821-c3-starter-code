@@ -1,57 +1,187 @@
-Working in a command line environment is recommended for ease of use with git and dvc. If on Windows, WSL1 or 2 is recommended.
+## Census Income Prediction API
 
-# Environment Set up
-* **Option 1: Using pip and venv (Recommended)**
-    * Ensure you have Python 3.13 installed
-    * Create virtual environment: `python3.13 -m venv .venv`
-    * Activate environment: `source .venv/bin/activate` (On Windows: `.venv\Scripts\activate`)
-    * Install dependencies: `pip install -r starter/requirements.txt`
+This project provides an end-to-end machine learning workflow for predicting whether an individual's income exceeds $50K per year using U.S. Census data. It includes data preprocessing, model training, slice-based evaluation, automated testing, CI/CD, and deployment of a FastAPI inference service.
 
-* **Option 2: Using conda**
-    * Download and install conda if you don't have it already.
-    * conda create -n [envname] "python=3.13" scikit-learn pandas numpy pytest jupyter jupyterlab fastapi uvicorn pydantic httpx matplotlib seaborn -c conda-forge
-    * Install git either through conda ("conda install git") or through your CLI, e.g. sudo apt-get git.
+## Project Overview
 
-## Repositories
-* Create a directory for the project and initialize git.
-    * As you work on the code, continually commit changes. Trained models you want to use in production must be committed to GitHub.
-* Connect your local git repo to GitHub.
-* Setup GitHub Actions on your repo. You can use one of the pre-made GitHub Actions if at a minimum it runs pytest and flake8 on push and requires both to pass without error.
-    * Make sure you set up the GitHub Action to use Python 3.13 (same version as development).
-    * Note: Add flake8 to requirements.txt if you want to use it for linting: `pip install flake8`
+The repository includes:
 
-# Data
-* Download census.csv and commit it to dvc.
-* This data is messy, try to open it in pandas and see what you get.
-* To clean it, use your favorite text editor to remove all spaces.
+- data preprocessing and model training code
+- serialized model artifacts for inference
+- slice-based model performance evaluation
+- a FastAPI application for online predictions
+- unit tests for model and API functionality
+- GitHub Actions for continuous integration
+- cloud deployment configuration using Render
 
-# Model
-* Using the starter code, write a machine learning model that trains on the clean data and saves the model. Complete any function that has been started.
-* Write unit tests for at least 3 functions in the model code.
-* Write a function that outputs the performance of the model on slices of the data.
-    * Suggestion: for simplicity, the function can just output the performance on slices of just the categorical features.
-* Write a model card using the provided template.
+## Environment Setup
 
-# API Creation
-*  Create a RESTful API using FastAPI this must implement:
-    * GET on the root giving a welcome message.
-    * POST that does model inference.
-    * Type hinting must be used.
-    * Use a Pydantic model to ingest the body from POST. This model should contain an example.
-   	 * Hint: the data has names with hyphens and Python does not allow those as variable names. Do not modify the column names in the csv and instead use the functionality of FastAPI/Pydantic/etc to deal with this.
-* Write 3 unit tests to test the API (one for the GET and two for POST, one that tests each prediction).
+Working in a command-line environment is recommended for easier use with Git, DVC, and deployment tooling. On Windows, WSL is recommended for a smoother development experience.
 
-# API Deployment
-* Create a free Heroku account (for the next steps you can either use the web GUI or download the Heroku CLI).
-* Create a new app and have it deployed from your GitHub repository.
-    * Enable automatic deployments that only deploy if your continuous integration passes.
-    * Hint: think about how paths will differ in your local environment vs. on Heroku.
-    * Hint: development in Python is fast! But how fast you can iterate slows down if you rely on your CI/CD to fail before fixing an issue. I like to run flake8 locally before I commit changes.
-    * Note: Install flake8 separately if needed: `pip install flake8`
-* Write a script that uses the requests module to do one POST on your live API.
+# Option 1: Using pip and venv
+
+Ensure Python 3.13 is installed, then run:
+
+bash
+
+python3.13 -m venv .venv
+source .venv/bin/activate
+pip install -r starter/requirements.txt
+On Windows, activate the environment with:
+
+applescript
+
+.venv\Scripts\activate
+# Option 2: Using conda
+
+Create and activate a conda environment:
+
+conda create -n census-api "python=3.13" scikit-learn pandas numpy pytest jupyter jupyterlab fastapi uvicorn pydantic httpx matplotlib seaborn -c conda-forge
+conda activate census-api
+If needed, install Git separately through conda or your system package manager.
+
+## Data
+
+The model is trained on the Census Income dataset. Data versioning is managed with DVC to support reproducibility and traceability.
+
+## Model Training
+
+The training pipeline:
+
+- loads and cleans the census dataset
+- processes categorical and numerical features
+- trains a classification model
+- evaluates model performance
+- saves model artifacts for inference
+To train the model, run:
+
+python starter/starter/train_model.py
+
+Generated model artifacts are stored in:
+
+starter/model/
+
+These artifacts are used by the FastAPI application during inference.
+
+## Model Evaluation
+
+The project includes:
+
+- overall model performance metrics 
+- slice-based evaluation across categorical features
+- a model card documenting intended use, assumptions, and limitations
+Slice-based metrics are saved to:
+
+starter/slice_output.txt
+
+## API
+
+The application exposes a FastAPI service for inference.
+
+# Endpoints
+
+GET /
+Returns a welcome or health-check message.
+
+POST /predict
+Accepts a single census record and returns an income prediction.
+
+# The API uses:
+
+- type hints
+- a Pydantic request schema
+- serialized model artifacts for prediction
+
+# Running the API Locally
+
+Start the API server with:
+
+cd starter
+uvicorn main:app --reload
+If needed on Windows, you can specify a port explicitly:
+
+uvicorn main:app --reload --port 8001
+
+Once running, open the interactive API docs at:
+
+http://127.0.0.1:8000/docs
+Or, if using port 8001:
+
+http://127.0.0.1:8001/docs
+
+## Testing
+
+The project includes unit tests for both the model code and API behavior.
+
+Run all tests with:
+
+pytest
+Run lint checks with:
+
+flake8
+
+## CI/CD
+
+GitHub Actions is used for continuous integration. On each push, the workflow validates the codebase by running:
+
+- lint checks
+- model tests
+- model artifact generation
+- API tests
+The application is deployed on Render with automatic deployment enabled after CI checks pass.
+
+## Deployment
+
+The production API is hosted on Render.
+
+# Live API URL:
+https://nd0821-c3-starter-code-war4.onrender.com
+
+# Example Inference Request
+
+You can test the deployed API using Python and the requests library.
+
+''' 
+import requests
+
+url = "https://nd0821-c3-starter-code-war4.onrender.com/predict"
+
+payload = {
+    "age": 39,
+    "workclass": "State-gov",
+    "fnlgt": 77516,
+    "education": "Bachelors",
+    "education-num": 13,
+    "marital-status": "Never-married",
+    "occupation": "Adm-clerical",
+    "relationship": "Not-in-family",
+    "race": "White",
+    "sex": "Male",
+    "capital-gain": 2174,
+    "capital-loss": 0,
+    "hours-per-week": 40,
+    "native-country": "United-States"
+}
+
+response = requests.post(url, json=payload)
+print(response.status_code)
+print(response.json())
+'''
+
+## Repository Structure
+
+starter/
+├── main.py
+├── requirements.txt
+├── model/
+├── slice_output.txt
+├── starter/
+│   ├── data.py
+│   ├── model.py
+│   ├── train_model.py
+│   └── ...
 
 ## Links
 
-- GitHub Repository: https://github.com/lochan1209/nd0821-c3-starter-code.git
-- Live API: https://nd0821-c3-starter-code-war4.onrender.com
-
+GitHub Repository: https://github.com/lochan1209/nd0821-c3-starter-code.git
+Live API: https://nd0821-c3-starter-code-war4.onrender.com
